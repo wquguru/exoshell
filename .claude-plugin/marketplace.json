@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ralph-ryan",
+  "description": "Ralph autonomous agent plugins for iterative development with Claude Code",
+  "owner": {
+    "name": "wquguru",
+    "email": "wquguru@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "ralph-loop-ryan",
+      "description": "Ralph autonomous agent for iterative development with multi-PRD parallel support. Commands: 'ralph prd' (create PRD), 'ralph prep' (prepare), 'ralph run' (execute), 'ralph status' (overview).",
+      "version": "1.0.0",
+      "author": {
+        "name": "wquguru",
+        "email": "wquguru@gmail.com"
+      },
+      "source": "./plugins/ralph-loop-ryan",
+      "category": "development",
+      "strict": false
+    }
+  ]
+}
