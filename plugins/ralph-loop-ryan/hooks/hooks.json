@@ -1,0 +1,15 @@
+{
+  "description": "Ralph Ryan plugin stop hook for multi-PRD parallel loops",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-hook.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
