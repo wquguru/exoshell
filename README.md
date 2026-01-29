@@ -6,6 +6,13 @@
 
 ---
 
+## Methodology | 方法论
+
+- [100+ Commits/Day, Solo Dev: How Moltbot(Prev. ClawdBot) Balances Product Roadmap & Development Speed](https://x.com/wquguru/status/2016909319154127282?s=20)
+- [日均上百commit：Moltbot（Clawdbot）如何兼顾产品路线图和开发速度](https://x.com/wquguru/status/2016685995090153800?s=20)
+
+---
+
 ## Installation | 安装
 
 ### Prerequisites | 前置条件
