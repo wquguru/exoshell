@@ -27,10 +27,23 @@ if [[ -d "$RALPH_BASE_DIR" ]]; then
   done
 fi
 
+# Get current session_id from hook input
+CURRENT_SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // ""')
+
+# Get transcript path from hook input
+TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // ""')
+
 if [[ -z "$ACTIVE_STATE_FILE" ]]; then
   # No active loop - allow exit
   exit 0
 fi
+
+# ============================================================
+# SESSION MATCHING: Only continue loop if session_id matches
+# ============================================================
+# Each ralph-loop.local.md contains a session_id field.
+# Only continue the loop if the current session matches.
+# This prevents PRD-06's loop from blocking PRD-07's prd command.
 
 # Parse markdown frontmatter (YAML between ---) and extract values
 FRONTMATTER=$(sed -n '/^---$/,/^---$/{ /^---$/d; p; }' "$ACTIVE_STATE_FILE")
@@ -39,6 +52,23 @@ MAX_ITERATIONS=$(echo "$FRONTMATTER" | grep '^max_iterations:' | sed 's/max_iter
 PRD_SLUG=$(echo "$FRONTMATTER" | grep '^prd_slug:' | sed 's/prd_slug: *//' | sed 's/^"\(.*\)"$/\1/')
 # Extract completion_promise and strip surrounding quotes if present
 COMPLETION_PROMISE=$(echo "$FRONTMATTER" | grep '^completion_promise:' | sed 's/completion_promise: *//' | sed 's/^"\(.*\)"$/\1/')
+# Extract session_id and strip surrounding quotes if present
+STATE_SESSION_ID=$(echo "$FRONTMATTER" | grep '^session_id:' | sed 's/session_id: *//' | sed 's/^"\(.*\)"$/\1/')
+
+# Check if session_id matches - only continue loop for the session that started it
+if [[ -n "$STATE_SESSION_ID" ]] && [[ "$STATE_SESSION_ID" != "$CURRENT_SESSION_ID" ]]; then
+  # Different session - allow exit without continuing this loop
+  # This prevents PRD-06's loop from blocking a different session running /ralph-ryan prd
+  exit 0
+fi
+
+# Verify transcript file exists
+if [[ ! -f "$TRANSCRIPT_PATH" ]]; then
+  echo "⚠️  Ralph Ryan loop: Transcript file not found" >&2
+  echo "   Ralph loop is stopping." >&2
+  rm "$ACTIVE_STATE_FILE"
+  exit 0
+fi
 
 # Validate numeric fields before arithmetic operations
 if [[ ! "$ITERATION" =~ ^[0-9]+$ ]]; then
@@ -64,17 +94,6 @@ fi
 # Check if max iterations reached
 if [[ $MAX_ITERATIONS -gt 0 ]] && [[ $ITERATION -ge $MAX_ITERATIONS ]]; then
   echo "🛑 Ralph Ryan loop: Max iterations ($MAX_ITERATIONS) reached for PRD: $PRD_SLUG"
-  rm "$ACTIVE_STATE_FILE"
-  exit 0
-fi
-
-# Get transcript path from hook input
-TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path')
-
-if [[ ! -f "$TRANSCRIPT_PATH" ]]; then
-  echo "⚠️  Ralph Ryan loop: Transcript file not found" >&2
-  echo "   Expected: $TRANSCRIPT_PATH" >&2
-  echo "   Ralph loop is stopping." >&2
   rm "$ACTIVE_STATE_FILE"
   exit 0
 fi
